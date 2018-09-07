@@ -41,6 +41,22 @@ bool QFontIcon::addFont(const QString &filename)
     return true;
 }
 
+bool QFontIcon::addIconNames(const QString& filename)
+{
+	QFile file(filename);
+	file.open(QIODevice::ReadOnly);
+	QByteArray rawData = file.readAll();
+	file.close();
+
+	QJsonDocument doc(QJsonDocument::fromJson(rawData));
+	if (!doc.isObject()) {
+		return false;
+	}
+	instance()->addNames(doc.object());
+
+	return true;
+}
+
 QFontIcon *QFontIcon::instance()
 {
     if (!mInstance)
@@ -67,19 +83,35 @@ QIcon QFontIcon::icon(const QChar &code, const QColor &baseColor, const QString 
     engine->setLetter(code);
     engine->setBaseColor(baseColor);
     return QIcon(engine);
-
-
 }
 
+QIcon QFontIcon::icon(const QString& name, const QColor &baseColor, const QString &family)
+{
+    QChar code = instance()->mHashes[name];
+    return icon(code, baseColor, family);
+}
 
 const QStringList &QFontIcon::families() const
 {
     return mfamilies;
 }
 
+const QList<QString> QFontIcon::allNames()
+{
+	return instance()->mHashes.keys();
+}
+
 void QFontIcon::addFamily(const QString &family)
 {
     mfamilies.append(family);
+}
+
+void QFontIcon::addNames (const QJsonObject json)
+{
+	foreach(const QString& key, json.keys()) {
+		QJsonValue value = json.value(key);
+		mHashes[key] = value.toInt();
+	}
 }
 
 QFontIcon::QFontIcon(QObject *parent)

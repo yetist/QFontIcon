@@ -63,22 +63,25 @@ class QFontIcon : public QObject
 public:
     // add Font. By default, the first one is used
     static bool addFont(const QString& filename);
+    static bool addIconNames(const QString& filename);
+    static const QList<QString> allNames();
     static QFontIcon * instance();
     // main methods. Return icons from code
     static QIcon icon(const QChar& code, const QColor& baseColor = QColor(),const QString& family = QString());
+    static QIcon icon(const QString& name, const QColor& baseColor = QColor(),const QString& family = QString());
     // return added fonts
     const QStringList& families() const;
 
 protected:
     void addFamily(const QString& family);
-
+    void addNames (const QJsonObject json);
 
 private:
     explicit QFontIcon(QObject *parent = 0);
     ~QFontIcon();
     static QFontIcon * mInstance;
     QStringList mfamilies;
-
+    QHash<QString, QChar> mHashes;
 
 };
 
